@@ -19,9 +19,18 @@ most twetted genre by Year of release
 highest average rating gener by Year of release
 
 
-
-
 '''
+
+MOVIES_FILE="./input_data/movies.dat"
+RATINGS_FILE="./input_data/ratings.dat"
+USERS_FILE="./input_data/users.dat"
+
+MOVIE_GENRE_NORM_FILE="./norm_data/movie_genre_norm.dat"
+MOVIE_NORM_FILE="./norm_data/movie_norm.dat"
+RATING_NORM_FILE="./norm_data/rating_norm.dat"
+
+GENRE_MAX_COMMENTS_FILE="./norm_data/genre_max_comments.csv"
+GENRE_MAX_RATINGS_FILE="./norm_data/genre_max_ratings.csv"
 
 
 def splitGenreData(val):
@@ -38,20 +47,6 @@ def getMovieYear(val):
     else:
         return None
 
-
-# MOVIES_FILE="./input_data/movies_s.dat"
-# RATINGS_FILE="./input_data/ratings_s.dat"
-# USERS_FILE="./input_data/users.dat"
-
-MOVIES_FILE="./input_data/movies.dat"
-RATINGS_FILE="./input_data/ratings.dat"
-USERS_FILE="./input_data/users.dat"
-
-MOVIE_GENRE_NORM_FILE="./norm_data/movie_genre_norm.dat"
-MOVIE_NORM_FILE="./norm_data/movie_norm.dat"
-RATING_NORM_FILE="./norm_data/rating_norm.dat"
-
-MASTER_FILE="./norm_data/master.dat"
 
 def getTimeElement(t_str,format):
     return time.strftime(format, time.localtime(int(t_str)))
@@ -83,26 +78,9 @@ def createNormalisedDataFiles():
     movies_df.to_csv(MOVIE_NORM_FILE,index=False)
     ratings_df.to_csv(RATING_NORM_FILE,index=False)
 
-def testJoin():
-    fst = pd.DataFrame({'key': ['K0', 'K1', 'K2', 'K1', 'K4', 'K5'],
-                   'A': ['A0', 'A1', 'A2', 'A3', 'A4', 'A5']})
 
-    # sec = pd.DataFrame({'key': ['K0', 'K1', 'K2','K2'],
-    #                     'B': ['B0', 'B1', 'B2','B3']})
-
-    sec = pd.DataFrame({'key': ['K0', 'K0', 'K1','K2', 'K1', 'K1', 'K1', 'K1', 'K1'],
-                        'B': ['B0', 'B1', 'B2','B3','B_1','B_2','B_3','B_4','B_5']})
-
-
-    print(pd.merge(fst,sec,left_on='key',right_on='key',how='left'))
-
-    # print(fst)
-    # print(sec)
-
-def makeRatingYearGenre():
-    # movie_genre_df=pd.read_csv(MOVIE_GENRE_NORM_FILE, delimiter=",",engine="python",names=["movie_id","genre"])
-    # ratings_df=pd.read_csv(RATING_NORM_FILE, delimiter=",",engine="python",names=["user_id","movie_id","rating","rating_timestamp","rating_date_day","rating_date_month","rating_date_year","rating_date_hour","rating_date_minute"])
-    # movies_df=pd.read_csv(MOVIE_NORM_FILE, delimiter=",",engine="python",names=["movie_id","movie_title_year","year"])
+# highest average rating gener by Year of release
+def higherRatings():
     movie_genre_df=pd.read_csv(MOVIE_GENRE_NORM_FILE)
     ratings_df=pd.read_csv(RATING_NORM_FILE)
     movies_df=pd.read_csv(MOVIE_NORM_FILE)
@@ -111,63 +89,46 @@ def makeRatingYearGenre():
     ratings_df.drop(["rating_timestamp","rating_date_day","rating_date_month","rating_date_year","rating_date_hour","rating_date_minute"],axis=1,inplace=True)
     movies_df.drop(["movie_title_year"],axis=1,inplace=True)
 
+    movie_genre_mean_df=pd.merge(pd.merge(movies_df,ratings_df,on='movie_id',how='left'),movie_genre_df,on='movie_id',how='left')
+    movie_genre_mean_df.drop(['movie_id','user_id'],axis=1,inplace=True)
+    movie_genre_mean_df=movie_genre_mean_df.groupby(['year','genre']).mean()
+    movie_genre_mean_df.reset_index( inplace=True)
+    movie_mean_df=movie_genre_mean_df.drop(['genre'],axis=1)
+    
+    movie_mean_df=movie_mean_df.groupby(['year']).max()
+    movie_mean_df.reset_index( inplace=True)   
+    result_df=pd.merge(movie_mean_df,movie_genre_mean_df,on=['year','rating'],how='left')
+    result_df.to_csv(GENRE_MAX_RATINGS_FILE,index=False)
 
-    # most twetted genre by Year of release
-    # highest average rating gener by Year of release
+
+# most twetted genre by Year of release
+def makeRatingYearGenre():
+    movie_genre_df=pd.read_csv(MOVIE_GENRE_NORM_FILE)
+    ratings_df=pd.read_csv(RATING_NORM_FILE)
+    movies_df=pd.read_csv(MOVIE_NORM_FILE)
+    
+    # dropping unused columns
+    ratings_df.drop(["rating_timestamp","rating_date_day","rating_date_month","rating_date_year","rating_date_hour","rating_date_minute"],axis=1,inplace=True)
+    movies_df.drop(["movie_title_year"],axis=1,inplace=True)
 
     merged_df=pd.merge(pd.merge(movies_df,ratings_df,on='movie_id',how='left'),movie_genre_df,on='movie_id',how='left')
 
-    #count_ratings_by_year_df=merged_df.groupby(['year','genre']).count().sort_values(by='movie_id',ascending=False)
     count_ratings_by_year_df=merged_df.groupby(['year','genre']).count().drop(['user_id','rating'],axis=1)
-    #count_ratings_by_year_df['genre']=count_ratings_by_year_df.index
     count_ratings_by_year_df.reset_index(level=0, inplace=True)
     count_ratings_by_year_df["genre_c"]=count_ratings_by_year_df.index
-    #print(count_ratings_by_year_df.groupby(['year','genre'],sort=False)['movie_id'].max())
-    # x=count_ratings_by_year_df.loc[count_ratings_by_year_df.groupby(['year','genre'], sort=True)['movie_id'].idxmax()]
-    # x.reset_index(level=0, inplace=True)
-    x=count_ratings_by_year_df.groupby(['year','genre'], sort=True)['movie_id'].idxmax()
+    
     year_max_of_movie_df=count_ratings_by_year_df.groupby(['year'], sort=True).max()
-    # print(count_ratings_by_year_df.head(30))
     year_max_of_movie_df.reset_index(level=0,inplace=True)
     year_max_of_movie_df=year_max_of_movie_df.groupby("year").max()
-    #year_max_of_movie_df.rename(columns={"movie_id":"max_movies"},inplace=True)
 
     result_df=pd.merge(year_max_of_movie_df,count_ratings_by_year_df,on=['year','movie_id'],how="inner").drop(['genre_c_x'],axis=1)
-    result_df.rename(columns={"movie_id":"remarks","genre_c_y":"genre"})
-    # print("------------")
-    # print(year_max_of_movie_df.head(20))
-    # print("================")
-    # print(count_ratings_by_year_df.head(20))
-    # print("[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]")
-
-    print(result_df.head(30))
-    
-
-
-    # movie_count_year_df=count_ratings_by_year_df.groupby(['year']).max()
-    # movie_count_year_df.reset_index(level=0, inplace=True)
-    # #print(movie_count_year_df.head(8))
-
-    # final=pd.merge(movie_count_year_df,count_ratings_by_year_df,how='left',on=['movie_id','year'])
-    # print("(("*40)
-    # #print(final.head(10))
-    # print("))"*40)
-    # #.sort('movie_id').index[-1]#
-    # # count_ratings_by_year_df.groupby(['year','genre']).
-    # # print(count_ratings_by_year_df)
-
-    # # print(movie_genre_df.head())
-    # # print(ratings_df.head()).max().reset_index(level=0).sort_values(by='year')
-    # # print(movies_df.head())
-    # # print(merged_df.head())
-    # print(count_ratings_by_year_df.head())
-    result_df.to_csv(MASTER_FILE,index=False)
-#    count_ratings_by_year_df.to_csv("./norm_data/op.dt")
+    result_df.rename(columns={"movie_id":"remarks_count","genre_c_y":"genre"},inplace=True)
+    result_df.to_csv(GENRE_MAX_COMMENTS_FILE,index=False)
 
 
 def main():
-    print("Have started")
+    print("Starting.....")
     createNormalisedDataFiles()
-    #testJoin()
     makeRatingYearGenre()
-    #test()
+    higherRatings()
+    print("Done")
