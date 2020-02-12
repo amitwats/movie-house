@@ -39,8 +39,12 @@ def getMovieYear(val):
         return None
 
 
-MOVIES_FILE="./input_data/movies_s.dat"
-RATINGS_FILE="./input_data/ratings_s.dat"
+# MOVIES_FILE="./input_data/movies_s.dat"
+# RATINGS_FILE="./input_data/ratings_s.dat"
+# USERS_FILE="./input_data/users.dat"
+
+MOVIES_FILE="./input_data/movies.dat"
+RATINGS_FILE="./input_data/ratings.dat"
 USERS_FILE="./input_data/users.dat"
 
 MOVIE_GENRE_NORM_FILE="./norm_data/movie_genre_norm.dat"
@@ -117,31 +121,48 @@ def makeRatingYearGenre():
     count_ratings_by_year_df=merged_df.groupby(['year','genre']).count().drop(['user_id','rating'],axis=1)
     #count_ratings_by_year_df['genre']=count_ratings_by_year_df.index
     count_ratings_by_year_df.reset_index(level=0, inplace=True)
-    print("##"*40)
+    count_ratings_by_year_df["genre_c"]=count_ratings_by_year_df.index
     #print(count_ratings_by_year_df.groupby(['year','genre'],sort=False)['movie_id'].max())
-    x=count_ratings_by_year_df.loc[count_ratings_by_year_df.groupby(['year','genre'], sort=True)['movie_id'].idxmax()]
-    print(x.head(10))
-    print("$"*40)
+    # x=count_ratings_by_year_df.loc[count_ratings_by_year_df.groupby(['year','genre'], sort=True)['movie_id'].idxmax()]
+    # x.reset_index(level=0, inplace=True)
+    x=count_ratings_by_year_df.groupby(['year','genre'], sort=True)['movie_id'].idxmax()
+    year_max_of_movie_df=count_ratings_by_year_df.groupby(['year'], sort=True).max()
+    # print(count_ratings_by_year_df.head(30))
+    year_max_of_movie_df.reset_index(level=0,inplace=True)
+    year_max_of_movie_df=year_max_of_movie_df.groupby("year").max()
+    #year_max_of_movie_df.rename(columns={"movie_id":"max_movies"},inplace=True)
 
-    movie_count_year_df=count_ratings_by_year_df.groupby(['year']).max()
-    movie_count_year_df.reset_index(level=0, inplace=True)
-    #print(movie_count_year_df.head(8))
+    result_df=pd.merge(year_max_of_movie_df,count_ratings_by_year_df,on=['year','movie_id'],how="inner").drop(['genre_c_x'],axis=1)
+    result_df.rename(columns={"movie_id":"remarks","genre_c_y":"genre"})
+    # print("------------")
+    # print(year_max_of_movie_df.head(20))
+    # print("================")
+    # print(count_ratings_by_year_df.head(20))
+    # print("[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]")
 
-    final=pd.merge(movie_count_year_df,count_ratings_by_year_df,how='left',on=['movie_id','year'])
-    print("(("*40)
-    #print(final.head(10))
-    print("))"*40)
-    #.sort('movie_id').index[-1]#
-    # count_ratings_by_year_df.groupby(['year','genre']).
-    # print(count_ratings_by_year_df)
+    print(result_df.head(30))
+    
 
-    # print(movie_genre_df.head())
-    # print(ratings_df.head()).max().reset_index(level=0).sort_values(by='year')
-    # print(movies_df.head())
-    # print(merged_df.head())
-    print(count_ratings_by_year_df.head())
-    merged_df.to_csv(MASTER_FILE,index=False)
-    count_ratings_by_year_df.to_csv("./norm_data/op.dt")
+
+    # movie_count_year_df=count_ratings_by_year_df.groupby(['year']).max()
+    # movie_count_year_df.reset_index(level=0, inplace=True)
+    # #print(movie_count_year_df.head(8))
+
+    # final=pd.merge(movie_count_year_df,count_ratings_by_year_df,how='left',on=['movie_id','year'])
+    # print("(("*40)
+    # #print(final.head(10))
+    # print("))"*40)
+    # #.sort('movie_id').index[-1]#
+    # # count_ratings_by_year_df.groupby(['year','genre']).
+    # # print(count_ratings_by_year_df)
+
+    # # print(movie_genre_df.head())
+    # # print(ratings_df.head()).max().reset_index(level=0).sort_values(by='year')
+    # # print(movies_df.head())
+    # # print(merged_df.head())
+    # print(count_ratings_by_year_df.head())
+    result_df.to_csv(MASTER_FILE,index=False)
+#    count_ratings_by_year_df.to_csv("./norm_data/op.dt")
 
 
 def main():
