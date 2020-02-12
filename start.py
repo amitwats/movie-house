@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
 '''
+DATA Structure
+
 Structure of movies.dat
 movie_id::movie_title (movie_year)::genre|genre|genre
 
@@ -16,13 +18,10 @@ user_id::movie_id::rating::rating_timestamp
 
 the most popular movie genres, year by year, for the past decade by using user rating from tweets.
 
-
-most twetted genre by Year of release
-highest average rating gener by Year of release
-
-
 '''
 
+# configuration 
+# file names
 MOVIES_FILE="./input_data/movies.dat"
 RATINGS_FILE="./input_data/ratings.dat"
 USERS_FILE="./input_data/users.dat"
@@ -35,13 +34,23 @@ GENRE_MAX_COMMENTS_FILE="./norm_data/genre_max_comments.csv"
 GENRE_MAX_RATINGS_FILE="./norm_data/genre_max_ratings.csv"
 
 
-def splitGenreData(val):
+def splitGenreData(val:str):
+    """Method to split "|" seperated values in the genre field.
+
+    Keyword arguments:
+    val -- the pipe seperated values from the genre field
+    """    
     if isinstance(val,str):
         return [(x) for x in val.split("|")] if val!=None else []
     else:
         return []
 
-def getMovieYear(val):
+def getMovieYear(val:str):
+    """Extracts the movie name from the title containing the year in the format "loren epsum loren epsum (YYYY) loren epsum"
+
+    Keyword arguments:
+    val -- the field of the movie name
+    """    
     if isinstance(val,str):
         beg=val.find("(")
         en=val.find(")")
@@ -161,10 +170,10 @@ def visualiseRatingYearGenre_exclude_bigs():
 
 def main():
     print("Starting.....")
-    # createNormalisedDataFiles()
-    # makeRatingYearGenre()
-    # higherRatings()
-    #visualiseRatingYearGenre_all()
+    createNormalisedDataFiles()
+    makeRatingYearGenre()
+    higherRatings()
+    visualiseRatingYearGenre_all()
     visualiseRatingYearGenre_all()
     visualiseRatingYearGenre_exclude_bigs()
 
