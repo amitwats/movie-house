@@ -140,6 +140,7 @@ def visualiseRatingYearGenre_all():
     fontP = FontProperties()
     fontP.set_size('small')
     plt.legend(patches,genre,prop=fontP,loc='upper center', bbox_to_anchor=(0.5, 1.05),ncol=6, fancybox=True, shadow=True)
+    genre_grouped_df.to_csv("./norm_data/visualiseRatingYearGenre_all.csv")
     plt.show()
 
 def visualiseRatingYearGenre_exclude_bigs():
@@ -154,6 +155,7 @@ def visualiseRatingYearGenre_exclude_bigs():
     fontP = FontProperties()
     fontP.set_size('small')
     plt.legend(patches,genre,prop=fontP,loc='upper center', bbox_to_anchor=(0.5, 1.05),ncol=6, fancybox=True, shadow=True)
+    genre_grouped_df.to_csv("./norm_data/visualiseRatingYearGenre_exclude_bigs.csv")
     plt.show()
 
 
