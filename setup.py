@@ -1,11 +1,14 @@
 from setuptools import setup, find_packages 
+# make sure to run this pip install -e .
+
 NAME = "movie-house" 
 
 VERSION = "0.1" 
 
 REQUIRES = [ 
     "numpy", 
-    "pandas"
+    "pandas",
+    "matplotlib"
 ] 
 
  

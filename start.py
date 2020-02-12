@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import time
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 '''
 Structure of movies.dat
@@ -125,10 +127,43 @@ def makeRatingYearGenre():
     result_df.rename(columns={"movie_id":"remarks_count","genre_c_y":"genre"},inplace=True)
     result_df.to_csv(GENRE_MAX_COMMENTS_FILE,index=False)
 
+def visualiseRatingYearGenre_all():
+    data_df=pd.read_csv(GENRE_MAX_COMMENTS_FILE)# columns: year,remarks_count,genre
+    genre_grouped_df=data_df.groupby(['genre']).sum()
+
+    print(genre_grouped_df.head())
+    genre=genre_grouped_df.index.values
+    remarks_count=genre_grouped_df['remarks_count']
+    patches, texts =plt.pie(remarks_count,labels=genre)
+
+
+    fontP = FontProperties()
+    fontP.set_size('small')
+    plt.legend(patches,genre,prop=fontP,loc='upper center', bbox_to_anchor=(0.5, 1.05),ncol=6, fancybox=True, shadow=True)
+    plt.show()
+
+def visualiseRatingYearGenre_exclude_bigs():
+    data_df=pd.read_csv(GENRE_MAX_COMMENTS_FILE)# columns: year,remarks_count,genre
+    genre_grouped_df=data_df[data_df["genre"]!= "Drama"][data_df["genre"]!= "Action"].groupby(['genre']).sum()
+
+    print(genre_grouped_df.head())
+    genre=genre_grouped_df.index.values
+    remarks_count=genre_grouped_df['remarks_count']
+    patches, texts =plt.pie(remarks_count,labels=genre)
+
+    fontP = FontProperties()
+    fontP.set_size('small')
+    plt.legend(patches,genre,prop=fontP,loc='upper center', bbox_to_anchor=(0.5, 1.05),ncol=6, fancybox=True, shadow=True)
+    plt.show()
+
 
 def main():
     print("Starting.....")
-    createNormalisedDataFiles()
-    makeRatingYearGenre()
-    higherRatings()
+    # createNormalisedDataFiles()
+    # makeRatingYearGenre()
+    # higherRatings()
+    #visualiseRatingYearGenre_all()
+    visualiseRatingYearGenre_all()
+    visualiseRatingYearGenre_exclude_bigs()
+
     print("Done")
